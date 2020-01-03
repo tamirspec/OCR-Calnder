@@ -34,9 +34,18 @@ class Image_processor():
         remove_signs = '!@#$%^&*~<>|'
         for sing in remove_signs:
             text = text.replace(sing,'')
-        text = text.replace('\n\n' ,'\n')
-        return text
+        return text.replace('\n\n' ,'\n')
 
+    def date_postion(self,date_list): #to be switched with location (us / other )
+        day = date_list[1]
+        month = date_list[0]
+        for place in enumerate(date_list):
+            if int(place[1]) >12 and int(place[1])< 30:
+
+                day = date_list[place[0]]
+                month = date_list[place[0]+1]
+                return day,month
+        return day,month
     def convert_date_to_google_format(self,date_list):
         for place in enumerate(date_list):
             if place[0] == 2:
@@ -45,19 +54,33 @@ class Image_processor():
 
             elif int(date_list[place[0]]) < 10 and len(date_list[place[0]])<2:
                 date_list[place[0]] = f'0{date_list[place[0]]}'
-
-        google_format_date = f'{date_list[2]}-{date_list[0]}-{date_list[1]}T00:00:00%s'
+        year = date_list[2]
+        day, month = self.date_postion(date_list)
+        google_format_date = f'{year}-{month}-{day}T00:00:00%s'
         return google_format_date
 
     def get_formated_google_date(self):
         text = self.image_to_string()
-        date = re.findall('[0-9]{1,2}[-|.\/]{1}[0-9]{1,2}[-|.\/]{1}[\d]{2,4}',text) #to fix for all dates
+        date_list = get_date_noramal(text)
+        if not date_list  :# checks if it found numeric date
+            date_list = get_date_verbal()
+
+        google_date = self.convert_date_to_google_format(date_list)
+        return google_date
+def get_date_noramal(text):
+        date = re.findall('[0-9]{1,2}[-|.\/]{1}[0-9]{1,2}[-|.\/]{1}[\d]{2,4}',text)#to fix for all dates
         sepreters = '/\._'
         date_list = []
         for speratre in sepreters:
             if speratre in date[0]:
                 date_list = date[0].split(speratre)
                 break
-        google_date = self.convert_date_to_google_format(date_list)
-        return google_date
+        return date_list
     # def get_date_verbal(self):
+def get_date_verbal(text):
+        date = re.findall('\W*(march|july|jan|fab|april|may|jun|june|july|august|aug|sept|september|oct|october|nov|november|dec|december|jan|january|)\s{0,1}\d{1,2}',text.lower())
+        return date
+def convert_verbal_to_numeric(dates):
+    date_list=[]
+    if 'jan 'in dates or 'jauray' in dates:
+        dates
