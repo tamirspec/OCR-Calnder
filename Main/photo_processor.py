@@ -1,7 +1,7 @@
 from pytesseract import pytesseract
 from Main.image_reader import Image
 import re
-
+from datetime import datetime
 class Image_processor():
     def __init__(self, image):
         self.image = image
@@ -46,7 +46,7 @@ class Image_processor():
                 month = date_list[place[0]+1]
                 return day,month
         return day,month
-    def convert_date_to_google_format(self,date_list):
+    def convert_date_to_google_format(self,date_list): #not orgenized !
         for place in enumerate(date_list):
             if place[0] == 2:
                 if len(place[1]) < 4:
@@ -59,16 +59,19 @@ class Image_processor():
         google_format_date = f'{year}-{month}-{day}T00:00:00%s'
         return google_format_date
 
-    def get_formated_google_date(self):
+    def get_formated_google_date(self): #not orgenized !
         text = self.image_to_string()
         date_list = get_date_noramal(text)
-        if not date_list  :# checks if it found numeric date
-            date_list = get_date_verbal()
-
+        if not date_list :# checks if it found numeric date
+            verbal_google_formated = get_date_verbal(text)
+            return verbal_google_formated
         google_date = self.convert_date_to_google_format(date_list)
         return google_date
+
 def get_date_noramal(text):
         date = re.findall('[0-9]{1,2}[-|.\/]{1}[0-9]{1,2}[-|.\/]{1}[\d]{2,4}',text)#to fix for all dates
+        if not date :
+            return None
         sepreters = '/\._'
         date_list = []
         for speratre in sepreters:
@@ -78,9 +81,16 @@ def get_date_noramal(text):
         return date_list
     # def get_date_verbal(self):
 def get_date_verbal(text):
-        date = re.findall('\W*(march|july|jan|fab|april|may|jun|june|july|august|aug|sept|september|oct|october|nov|november|dec|december|jan|january|)\s{0,1}\d{1,2}',text.lower())
-        return date
+    date = re.findall('(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s{0,1}(\d{1,2})(?:rd|th|st|nd|)\s{0,1}(?:(\d{0,4}))',text.lower())
+    date = convert_verbal_to_numeric(date)
+    return date
 def convert_verbal_to_numeric(dates):
-    date_list=[]
-    if 'jan 'in dates or 'jauray' in dates:
-        dates
+    dates = dates[0]
+    day = dates[1]
+    month = dates[0]
+    year = dates[2]
+    if not year:
+        year = datetime.today().year
+    date = datetime.strptime(f'{day}-{month[0:3]}-{year}', '%d-%b-%Y')
+    return date
+
