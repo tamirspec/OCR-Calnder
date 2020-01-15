@@ -1,7 +1,6 @@
 from pytesseract import pytesseract
 from Main.image_reader import Image
-import re
-
+from datetime import datetime
 class Image_processor():
     def __init__(self, image):
         self.image = image
@@ -34,30 +33,18 @@ class Image_processor():
         remove_signs = '!@#$%^&*~<>|'
         for sing in remove_signs:
             text = text.replace(sing,'')
-        text = text.replace('\n\n' ,'\n')
-        return text
+        return text.replace('\n\n' ,'\n')
 
-    def convert_date_to_google_format(self,date_list):
-        for place in enumerate(date_list):
-            if place[0] == 2:
-                if len(place[1]) < 4:
-                    date_list[place[0]] = f'20{date_list[place[0]]}'
 
-            elif int(date_list[place[0]]) < 10 and len(date_list[place[0]])<2:
-                date_list[place[0]] = f'0{date_list[place[0]]}'
-
-        google_format_date = f'{date_list[2]}-{date_list[0]}-{date_list[1]}T00:00:00%s'
-        return google_format_date
-
-    def get_formated_google_date(self):
-        text = self.image_to_string()
-        date = re.findall('[0-9]{1,2}[-|.\/]{1}[0-9]{1,2}[-|.\/]{1}[\d]{2,4}',text) #to fix for all dates
-        sepreters = '/\._'
-        date_list = []
-        for speratre in sepreters:
-            if speratre in date[0]:
-                date_list = date[0].split(speratre)
-                break
-        google_date = self.convert_date_to_google_format(date_list)
-        return google_date
-    # def get_date_verbal(self):
+    # def convert_date_to_google_format(self,date_list): #not orgenized !
+    #     for place in enumerate(date_list):
+    #         if place[0] == 2:
+    #             if len(place[1]) < 4:
+    #                 date_list[place[0]] = f'20{date_list[place[0]]}'
+    #
+    #         elif int(date_list[place[0]]) < 10 and len(date_list[place[0]])<2:
+    #             date_list[place[0]] = f'0{date_list[place[0]]}'
+    #     year = date_list[2]
+    #     day, month = self.date_postion(date_list)
+    #     google_format_date = f'{year}-{month}-{day}T00:00:00%s'
+    #     return google_format_date
